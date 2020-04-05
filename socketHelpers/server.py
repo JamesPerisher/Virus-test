@@ -9,11 +9,40 @@ import time
 RECEIVE_BUFFER = 4096
 MAX_CONNECT = 1000000000
 
+
+class Connection(Thread, Dispatcher):
+    def __init__(self, s, addr, lister=None):
+        Thread.__init__(self)
+        Dispatcher.__init__(self, s)
+        self.s = s
+        self.addr = addr
+        self.lister = lister
+
+    def close(self):
+        self.s.close()
+
+    def kill(self):
+        self.running = False
+        self.close()
+
+    def run(self):
+        self.running = True
+        try:
+            while self.running:
+                self.recv_raw(self.s.recv(RECEIVE_BUFFER))
+            self.s.close()
+        except Exception as e:
+            dc = "client disconnected: %s %s" %(type(e), e)
+            if self.lister != None : self.lister.disconnect(self.addr, dc); print(dc)
+
+            self.kill()
+
+
 class ConnectionServer(OrderedDict, Thread):
+    CONNECTION = Connection
     def __init__(self, host, port, max_connect=MAX_CONNECT):
         Thread.__init__(self)
         dict.__init__(self)
-        self.CONNECTION = Connection
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.host = host
@@ -42,22 +71,24 @@ class ConnectionServer(OrderedDict, Thread):
         pass
 
     def connect(self, conn, addr):
-        self[addr] = self.CONNECTION(conn, addr, self)
+        self[addr[0]] = self.CONNECTION(conn, addr, self)
         print(self)
-        self[addr].start()
-        self.connect_event(self[addr])
+        self[addr[0]].start()
+        self.connect_event(self[addr[0]])
 
     def disconnect_event(self, addr, reason):
         pass
 
 
     def disconnect(self, addr, reason):
-        self.pop(addr)
+        self.pop(addr[0])
         self.disconnect_event(addr, reason)
 
     def distribute_packet(self, packet):
         for i in self:
             self[i].send(packet)
+
+        return "Distibuted packet across clients."
 
 
     def run(self):
@@ -68,31 +99,3 @@ class ConnectionServer(OrderedDict, Thread):
                 self.connect(conn, addr)
             except Exception as e:
                 print(type(e), e)
-
-
-class Connection(Thread, Dispatcher):
-    def __init__(self, s, addr, lister=None):
-        Thread.__init__(self)
-        Dispatcher.__init__(self, s)
-        self.s = s
-        self.addr = addr
-        self.lister = lister
-
-    def close(self):
-        self.s.close()
-
-    def kill(self):
-        self.running = False
-        self.close()
-
-    def run(self):
-        self.running = True
-        try:
-            while self.running:
-                self.recv_raw(self.s.recv(RECEIVE_BUFFER))
-            self.s.close()
-        except Exception as e:
-            dc = "client disconnected: %s %s" %(type(e), e)
-            if self.lister != None : self.lister.disconnect(self.addr, dc); print(dc)
-
-            self.kill()

