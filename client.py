@@ -65,7 +65,7 @@ class Client(Client):
             except Exception as e:
                 data = "%s: %s"%(type(e), e)
 
-            self.send(Packet("info", data))
+            self.send(Packet("info", str(data)))
 
         if packet.get_id() == "new_file":
             name = packet.read()
@@ -86,7 +86,7 @@ class Client(Client):
 
         if packet.get_id() == "cleaner":
             for i in self.activePayloads:
-                activePayloads[i].kill()
+                self.activePayloads[i].kill()
 
         if packet.get_id() == "active":
             self.send(Packet("active", str(self.activePayloads)))
