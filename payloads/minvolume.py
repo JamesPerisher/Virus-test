@@ -45,7 +45,7 @@ def fc(va,length=0):
     fb(va)
 
 def execute(caller):
-    while caller.running:
+    while True:
         fa(VK_VOLUME_UP)
         fb(VK_VOLUME_UP)
         time.sleep(0.02)
