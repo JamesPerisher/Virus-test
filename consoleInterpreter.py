@@ -66,9 +66,10 @@ class Arg:
 
 
 class Command(list):
-    def __init__(self, name, *args, **kwargs):
+    def __init__(self, name, *args, description = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.name = name if type(name) == type(list()) else [name]
+        self.description = description
 
     def __repr__(self):
         return "command%s(%s)"%(self.name,super().__repr__())
