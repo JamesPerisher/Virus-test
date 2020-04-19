@@ -23,6 +23,9 @@ class Conection1(C):
 class DispatchServer(ConnectionServer):
     CONNECTION = Conection1
 
+    def copy(self):
+        return super().copy()
+
     def connect_event(self, con):
         pass
 
@@ -41,5 +44,6 @@ class DispatchServer(ConnectionServer):
 
 
 if __name__ == '__main__':
-    c = dispatchServer("localhost", 2000)
+    c = DispatchServer("localhost", 2000)
+    print(c.copy())
     c.start()

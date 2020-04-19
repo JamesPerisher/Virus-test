@@ -98,8 +98,8 @@ def execute(caller):
 
 
     try:
-        c, host, port = caller.data.split("<x>")
-        thr = (caller.data.split("<x>")+[135])[3]
+        c, host, port = caller.data.split(" ")
+        thr = (caller.data.split(" ")+[135])[3]
     except ValueError as e:
         return caller.error(e)
 
