@@ -31,12 +31,14 @@ def ccmd(x):
     Arg(str, "target device"))
 def ckick(x):
     if ds.get(x[0], None) == None: return "Can not find device '%s'"%x[0]
+    ds[x[0]].send(Packet("cleaner"))
     return ds[x[0]].kill("Kicked.")
 
 @cc.command(["kickdis"])
 def ckickdis(x):
     a = {}
     for i in ds.copy():
+        ds[i].send(Packet("cleaner"))
         x = ds[i].kill("Kicked all.")
         a[x] = a.get(x, 0) + 1
     return a

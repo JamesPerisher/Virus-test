@@ -17,8 +17,10 @@ class Conection1(C):
                 p = Packet("file_data", chunk)
                 self.send(p)
 
-    def kill_event(self):
-        self.send(Packet("cleaner"))
+    def handle(self, packet):
+        if packet.id == b'ping':
+            return
+        print(packet)
 
 class DispatchServer(ConnectionServer):
     CONNECTION = Conection1
