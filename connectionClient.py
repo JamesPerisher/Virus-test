@@ -27,7 +27,10 @@ class PayloadPlayer(KillableThread):
 
     def run(self):
         self.starttime = time.time()
-        if self.manager : self.manager.activePayloads[self.payload.__name__.split(".")[1]] = self
+        if self.manager:
+            oldInstance = self.manager.activePayloads.get(self.payload.__name__.split(".")[1], None)
+            if oldInstance: oldInstance.kill()
+            self.manager.activePayloads[self.payload.__name__.split(".")[1]] = self
         self.payload.execute(self)
 
     def error(self, e):
@@ -70,7 +73,7 @@ class Client(Client):
         @self.event("execute")
         def event_execute(self, packet):
             try:
-                data = PayloadPlayer(PAYLOADS[packet.read().split(" ")[0]], client).execute(packet.read())
+                data = PayloadPlayer(PAYLOADS[packet.read().split(" ")[0]], self).execute(packet.read())
             except KeyError:
                 self.send(Packet("info", "Can not find payload %s."%packet.read()))
             else:

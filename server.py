@@ -24,12 +24,22 @@ class Conection1(C):
 
 class DispatchServer(ConnectionServer):
     CONNECTION = Conection1
+    distribute_cache = {}
 
     def copy(self):
         return super().copy()
 
     def connect_event(self, con):
-        pass
+        for i in self.distribute_cache:
+            con.send(self.distribute_cache[i])
+
+    def distribute_packet(self, packet):
+        if packet.get_id() == "paykill":
+            self.distribute_cache.pop(("execute", packet.read()), None)
+            return super().distribute_packet(packet)
+            
+        self.distribute_cache[(packet.get_id(), packet.read().split(" ")[0])] = packet
+        return super().distribute_packet(packet)
 
     def distribute_file(self, file, name):
         with open(file, "rb") as f:
