@@ -2,8 +2,8 @@ import time
 import connectionClient
 
 # from request import TorRequest
-from customThreading import KillableThread
-from socketHelpers.packet import Packet
+from customthreading import KillableThread
+from sockethelpers.packet import Packet
 
 
 LOOP_DELAY = 0.5

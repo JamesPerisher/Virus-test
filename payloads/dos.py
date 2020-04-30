@@ -1,6 +1,6 @@
 from queue import Queue
 from optparse import OptionParser
-from customThreading import KillableThread
+from customthreading import KillableThread
 import time,sys,socket,logging,urllib.request,random
 
 RETURNS = False

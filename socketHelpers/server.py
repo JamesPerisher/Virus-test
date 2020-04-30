@@ -1,7 +1,8 @@
-from customThreading import KillableThread
+from customthreading import KillableThread
+from .securesocket import RSASocket
+from collections import OrderedDict
 from .dispatcher import Dispatcher
 from .packet import Packet
-from collections import OrderedDict
 
 import socket
 import time
@@ -46,7 +47,7 @@ class ConnectionServer(KillableThread, OrderedDict):
     def __init__(self, host, port, max_connect=MAX_CONNECT):
         KillableThread.__init__(self)
         dict.__init__(self)
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s = RSASocket(socket.AF_INET, socket.SOCK_STREAM)
 
         self.host = host
         self.port = port

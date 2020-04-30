@@ -1,6 +1,6 @@
-from customThreading import KillableThread
-from socketHelpers.client import Client
-from socketHelpers.packet import Packet
+from customthreading import KillableThread
+from sockethelpers.client import Client
+from sockethelpers.packet import Packet
 
 import os
 import time

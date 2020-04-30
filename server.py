@@ -1,6 +1,6 @@
-from socketHelpers.server import ConnectionServer
-from socketHelpers.server import Connection as C
-from socketHelpers.packet import Packet
+from sockethelpers.server import ConnectionServer
+from sockethelpers.server import Connection as C
+from sockethelpers.packet import Packet
 
 
 RECEIVE_BUFFER = 4096

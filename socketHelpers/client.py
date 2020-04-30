@@ -1,4 +1,5 @@
-from customThreading import KillableThread
+from customthreading import KillableThread
+from .securesocket import RSASocket
 from .dispatcher import Dispatcher
 from .packet import Packet
 
@@ -11,7 +12,7 @@ RECEIVE_BUFFER = 4096
 class Client(KillableThread, Dispatcher):
     def __init__(self, host, port):
         KillableThread.__init__(self)
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s = RSASocket(socket.AF_INET, socket.SOCK_STREAM)
         Dispatcher.__init__(self, self.s)
 
 

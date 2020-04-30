@@ -1,4 +1,4 @@
-from socketHelpers.packet import Packet
+from sockethelpers.packet import Packet
 
 from consoleInterpreter import *
 from server import DispatchServer
