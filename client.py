@@ -1,9 +1,9 @@
 import time
-import connectionClient
 
-# from request import TorRequest
-from customthreading import KillableThread
+from connectionclient import Client
 from sockethelpers.packet import Packet
+from customthreading import KillableThread
+from torpy.torpy.http.requests import tor_requests_session
 
 
 LOOP_DELAY = 0.5
@@ -20,18 +20,18 @@ class MainLoop(KillableThread):
 
         self.count = 0
         self.loopdelay = loopdelay
-        self.pingdelay = time.time() + PING_DELAY
+        self.pingdelay = 0
 
 
     def onStart(self):
-        self.client = connectionClient.Client("localhost", 2000)
+        self.client = Client(HOST, PORT)
         self.client.start()
 
     def connect(self):
         self.pingdelay = time.time() + PING_DELAY
         if not self.client.send(Packet("ping")):
             print("No connect, retrying.")
-            self.client = connectionClient.Client(HOST, PORT)
+            self.client = Client(HOST, PORT)
             self.client.start()
             return False
         return True
