@@ -1,9 +1,9 @@
+import os
+import time
+
 from customthreading import KillableThread
 from sockethelpers.client import Client
 from sockethelpers.packet import Packet
-
-import os
-import time
 
 import payloads.dos
 import payloads.test

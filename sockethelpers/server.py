@@ -2,10 +2,9 @@ from customthreading import KillableThread
 from .securesocket import RSASocket
 from collections import OrderedDict
 from .dispatcher import Dispatcher
-from .packet import Packet
 
 import socket
-import time
+
 
 RECEIVE_BUFFER = 4096
 MAX_CONNECT = 1000000000
@@ -93,7 +92,7 @@ class ConnectionServer(KillableThread, OrderedDict):
     def disconnect(self, addr, reason):
         try:
             self.pop(self.key(addr))
-        except KeyError: # disconnected between now and when asked to 
+        except KeyError: # disconnected between now and when asked to
             pass
         self.disconnect_event(addr, reason)
 

@@ -1,13 +1,16 @@
+import socket
+
 from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 
-import socket
+
+KEY_SIZE = 32
 
 
 class RSASocket(socket.socket):
-    def __init__(self, *args, block_size=AES.block_size, key_size=32, **kwargs):
+    def __init__(self, *args, block_size=AES.block_size, key_size=KEY_SIZE, **kwargs):
         super().__init__(*args, **kwargs)
         self.masterkey = None
         self.block_size = block_size

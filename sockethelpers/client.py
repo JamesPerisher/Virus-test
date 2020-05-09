@@ -1,10 +1,9 @@
 from customthreading import KillableThread
 from .securesocket import RSASocket
 from .dispatcher import Dispatcher
-from .packet import Packet
 
 import socket
-import time
+
 
 RECEIVE_BUFFER = 4096
 

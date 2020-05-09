@@ -4,7 +4,7 @@ class Packet(object):
         self.data = b'' if (data==None) or (data=="") else (data if isinstance(data, bytes) else data.strip().encode())
 
     def __repr__(self):
-        return "<Packet(%s, %s)>"%("\"\"" if (self.id == "") or (self.id == None) else self.id, "\"\"" if (self.data == "") or (self.data == None) else self.data)
+        return "Packet(%s, %s)"%("\"\"" if (self.id == "") or (self.id == None) else self.id, "\"\"" if (self.data == "") or (self.data == None) else self.data)
 
     def clear(self):
         self.data = b''

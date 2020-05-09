@@ -1,13 +1,17 @@
-from sockethelpers.packet import Packet
-
 from consoleInterpreter import *
 from server import DispatchServer
+from sockethelpers.packet import Packet
 
-import os
 
-ds = DispatchServer("localhost", 2000)
+HOST = "localhost" # HOST to listen on
+PORT = 2000        # PORT to listen on
+
+ds = DispatchServer(HOST, PORT)
 cc = CommandConsole()
 
+@cc.command(["help"])
+def chelp(x):
+    return str(cc)
 
 @cc.command(["list"],
     Arg(int, "Page index.", optional=True))
@@ -26,7 +30,6 @@ def ccmd(x):
     if ds.get(x[0], None) == None: return "Can not find device '%s'"%x[0]
     return ds[x[0]].send(Packet("cmd", x[1]))
 
-
 @cc.command(["kick"],
     Arg(str, "target device"))
 def ckick(x):
@@ -42,7 +45,6 @@ def ckickdis(x):
         x = ds[i].kill("Kicked all.")
         a[x] = a.get(x, 0) + 1
     return a
-
 
 @cc.command(["paylist"],
     Arg(str, "target device"))
@@ -113,6 +115,3 @@ ds.start()
 while True:
     out = cc.handleExecute(input(": "))
     print(out)
-
-
-print(cc)

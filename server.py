@@ -37,7 +37,7 @@ class DispatchServer(ConnectionServer):
         if packet.get_id() == "paykill":
             self.distribute_cache.pop(("execute", packet.read()), None)
             return super().distribute_packet(packet)
-            
+
         self.distribute_cache[(packet.get_id(), packet.read().split(" ")[0])] = packet
         return super().distribute_packet(packet)
 
@@ -52,10 +52,3 @@ class DispatchServer(ConnectionServer):
                 p = Packet("file_data", chunk)
                 for i in self:
                     i.send(p)
-
-
-
-if __name__ == '__main__':
-    c = DispatchServer("localhost", 2000)
-    print(c.copy())
-    c.start()

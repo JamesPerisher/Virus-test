@@ -1,9 +1,9 @@
-import random,os,shutil,time,ctypes,webbrowser
-from os.path import expanduser
-from pathlib import Path
-from itertools import chain
+import time
+import ctypes
+
 
 RETURNS = False
+
 
 SendInput=ctypes.windll.user32.SendInput
 PUL=ctypes.POINTER(ctypes.c_ulong)
